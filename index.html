@@ -75,6 +75,7 @@
   .roster-team-col { width: 220px; }
   .roster-narrow-col { width: 80px; }
   .roster-action-col { width: 64px; }
+  .roster-ch-cell { text-align: center; color: #444; }
   .placeholder-badge {
     display: inline-block; background: #fff3cd; color: #7a5b00; border-radius: 4px;
     padding: 2px 8px; font-size: 0.75rem; margin-left: 8px;
@@ -159,7 +160,7 @@
     <section id="tab-roster" class="tab-panel" hidden>
       <div class="card">
         <h2>Roster</h2>
-        <p class="hint">Add every player and which team they're on. Handicap Index and Tee are used for Day 2 net scoring (added in a later stage) — fill them in whenever you have them, they're not required to set up pairings.</p>
+        <p class="hint">Add every player and which team they're on. Handicap Index and Tee are used for Day 2 net scoring — fill them in whenever you have them, they're not required to set up pairings. <strong>Course Handicap</strong> is calculated automatically from those two (Red: Slope 111 / Rating 64.1; Gold: Slope 120 / Rating 67.1; Par 72 both) and is what's actually used for strokes on scorecards and during matches — it's read-only here, just type in Handicap Index and Tee and it fills itself in.</p>
         <table id="rosterTable">
           <thead>
             <tr>
@@ -167,6 +168,7 @@
               <th class="roster-team-col">Team</th>
               <th class="roster-narrow-col">Handicap Index</th>
               <th class="roster-narrow-col">Tee</th>
+              <th class="roster-narrow-col">Course Handicap</th>
               <th class="roster-action-col"></th>
             </tr>
           </thead>
@@ -186,10 +188,10 @@
     <section id="tab-day1" class="tab-panel" hidden>
       <div class="card">
         <h2>Day 1 Pairings <span class="placeholder-badge">Front 9: Captain's Choice · Back 9: Mod. Alt Shot</span></h2>
-        <p class="hint">Each match is 2 players per team. Use placeholder matchups now — everything here is editable later once captains set real pairings.</p>
+        <p class="hint">Each match is 2 players per team. Use placeholder matchups now — everything here is editable later once captains set real pairings. Start Hole accepts plain text, so if the pro shop doubles up a hole for the shotgun (two groups starting from the same tee, a few minutes apart), enter it as e.g. "18a" and "18b" — this is just for the pairing sheet/scorecard and doesn't affect any scoring.</p>
         <table>
           <thead>
-            <tr><th></th><th colspan="2" id="day1TeamAHeader">Team A</th><th colspan="2" id="day1TeamBHeader">Team B</th><th>Start Hole</th><th>Tee</th><th>Scorekeeper PIN</th></tr>
+            <tr><th></th><th colspan="2" id="day1TeamAHeader">Team A</th><th colspan="2" id="day1TeamBHeader">Team B</th><th>Start Hole</th><th>Scorekeeper PIN</th></tr>
           </thead>
           <tbody id="day1Body"></tbody>
         </table>
@@ -206,10 +208,10 @@
     <section id="tab-day2" class="tab-panel" hidden>
       <div class="card">
         <h2>Day 2 Pairings <span class="placeholder-badge">Front 9: Best Ball · Back 9: Individual Match Play</span></h2>
-        <p class="hint">Best Ball uses the same 2-vs-2 foursome as the match below. For the back-nine Individual Match Play, pick which player from each team faces which — defaults to Player 1 vs Player 1 and Player 2 vs Player 2.</p>
+        <p class="hint">Best Ball uses the same 2-vs-2 foursome as the match below. For the back-nine Individual Match Play, pick which player from each team faces which — defaults to Player 1 vs Player 1 and Player 2 vs Player 2. Start Hole accepts plain text, so a doubled-up shotgun hole can be entered as e.g. "18a" and "18b" — display only, doesn't affect scoring.</p>
         <table>
           <thead>
-            <tr><th></th><th colspan="2" id="day2TeamAHeader">Team A</th><th colspan="2" id="day2TeamBHeader">Team B</th><th>Tee</th><th>Scorekeeper PIN</th></tr>
+            <tr><th></th><th colspan="2" id="day2TeamAHeader">Team A</th><th colspan="2" id="day2TeamBHeader">Team B</th><th>Start Hole</th><th>Scorekeeper PIN</th></tr>
           </thead>
           <tbody id="day2Body"></tbody>
         </table>
@@ -226,13 +228,11 @@
     <section id="tab-holehc" class="tab-panel" hidden>
       <div class="card">
         <h2>Hole Handicaps</h2>
-        <p class="hint">Stroke Index ranks each hole 1 (hardest) to 18 (easiest) — this is what Day 2's Live Scoring page uses to work out net scores from each player's Handicap Index on the Roster tab. Par is optional, just for reference. This only needs to be set once per course/tee setup.</p>
+        <p class="hint">Stroke Index ranks each hole 1 (hardest) to 18 (easiest) — this is what Day 2's Live Scoring page uses to work out net scores from each player's Handicap Index on the Roster tab. Red tees play to a different Stroke Index than every other tee on this course, so there's a separate column just for them: any Roster player whose Tee is "Red" gets strokes from that column instead, everyone else (Gold, White, Blue, etc.) uses the regular Stroke Index column. Par is optional, just for reference, and doesn't change by tee. This table is set once per course/tee setup and shouldn't need changing after that — if it ever does (a new course, a corrected number), edit it directly in the Google Sheet's <code>HoleHandicaps</code> / <code>HoleHandicapsRed</code> tabs rather than here.</p>
         <table>
-          <thead><tr><th style="width:80px;">Hole</th><th>Stroke Index (1–18, each used once)</th><th style="width:120px;">Par</th></tr></thead>
+          <thead><tr><th style="width:70px;">Hole</th><th>Stroke Index</th><th>Red Stroke Index</th><th style="width:90px;">Par</th></tr></thead>
           <tbody id="holeHcBody"></tbody>
         </table>
-        <button class="primary" onclick="saveHoleHandicaps()" style="margin-top:16px;">Save Hole Handicaps</button>
-        <div id="holeHcStatus" class="status"></div>
       </div>
     </section>
 
@@ -247,6 +247,8 @@
           as dots on the holes they apply to. <strong>Day 1</strong> is one row per team instead of per
           player, since Captain's Choice and Modified Alternate Shot are both one combined score per
           team per hole — no handicap strokes apply, so there's no Hcp row or dots for that day.
+          Any match printed without a Scorekeeper PIN yet automatically gets one generated and saved,
+          and it's printed right on the card as a backup way to unlock scoring on Live Scoring.
         </p>
         <div style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
           <select id="printDaySelect" onchange="populatePrintMatchSelect()">
@@ -280,7 +282,7 @@ const CONFIG = {
 // the live "Backend:" version (from Code.gs) so you can tell at a glance
 // whether the page you're looking at, and the Apps Script it's talking to,
 // are both up to date.
-const ADMIN_VERSION = '2026-09-05i';
+const ADMIN_VERSION = '2026-09-06l';
 
 // Environment detection: an explicit ?env=test or ?env=live in the URL always
 // wins (use this while testing the raw local file, e.g. index.html?env=test).
@@ -365,7 +367,31 @@ document.querySelectorAll('.tab-btn').forEach((btn) => {
 // ====================== STATE ======================
 let roster = [];       // [{PlayerID, Name, Team, HandicapIndex, Tee, Active}]
 let settings = {};
-let holeHandicaps = []; // [{Hole, StrokeIndex, Par}] x18
+let holeHandicaps = []; // [{Hole, StrokeIndex, Par}] x18 — used by every tee except Red
+let holeHandicapsRed = []; // [{Hole, StrokeIndex}] x18 — Red tees only
+
+// Which Stroke Index table a player's tee should use — matches the same
+// helper in live.html, so print scorecards and live scoring never disagree.
+function strokeIndexForTee(tee, hole) {
+  const isRed = (tee || '').trim().toLowerCase() === 'red';
+  const table = isRed ? holeHandicapsRed : holeHandicaps;
+  const hh = table.find((r) => Number(r.Hole) === hole) || {};
+  return hh.StrokeIndex;
+}
+
+// Course Handicap = Handicap Index x (Slope/113) + (Course Rating - Par),
+// per this course's own rating/slope for each tee (Par 72 both tees):
+//   Red:  Slope 111, Rating 64.1
+//   Gold: Slope 120, Rating 67.1 (also used for any tee other than Red)
+// This is what actually gets used for strokes everywhere in the app — on the
+// Roster it's a read-only, auto-calculated column, not something you type in.
+function courseHandicap(handicapIndex, tee) {
+  const idx = parseFloat(handicapIndex);
+  if (isNaN(idx)) return '';
+  const isRed = (tee || '').trim().toLowerCase() === 'red';
+  const ch = isRed ? (idx * 111 / 113 + (64.1 - 72)) : (idx * 120 / 113 + (67.1 - 72));
+  return Math.round(ch);
+}
 
 // ====================== INIT ======================
 async function loadVersionBadge() {
@@ -381,7 +407,7 @@ async function loadVersionBadge() {
 
 async function init() {
   loadVersionBadge();
-  const [settingsRes, rosterRes, hcRes] = await Promise.all([apiGet('getSettings'), apiGet('getRoster'), apiGet('getHoleHandicaps')]);
+  const [settingsRes, rosterRes, hcRes, hcRedRes] = await Promise.all([apiGet('getSettings'), apiGet('getRoster'), apiGet('getHoleHandicaps'), apiGet('getHoleHandicapsRed')]);
   if (settingsRes.success) {
     settings = settingsRes.data;
     populateSettingsForm();
@@ -390,60 +416,43 @@ async function init() {
     roster = rosterRes.data;
     renderRoster();
   }
-  if (hcRes.success) {
-    holeHandicaps = hcRes.data.length ? hcRes.data : defaultHoleHandicapRows();
-    renderHoleHandicaps();
-  }
+  if (hcRes.success) holeHandicaps = hcRes.data.length ? hcRes.data : defaultHoleHandicapRows();
+  if (hcRedRes.success) holeHandicapsRed = hcRedRes.data.length ? hcRedRes.data : defaultHoleHandicapRedRows();
+  renderHoleHandicaps();
   await Promise.all([loadPairings('1'), loadPairings('2')]);
 }
 
 // ====================== HOLE HANDICAPS TAB ======================
+// Read-only display, combining the regular and Red Stroke Index tables into
+// one row per hole. Set once per course/tee setup and not expected to change
+// after that — edit the HoleHandicaps / HoleHandicapsRed tabs directly in the
+// Google Sheet if it ever needs to (see strokeIndexForTee for how each is used).
 function defaultHoleHandicapRows() {
   const rows = [];
   for (let h = 1; h <= 18; h++) rows.push({ Hole: h, StrokeIndex: '', Par: '' });
   return rows;
 }
+function defaultHoleHandicapRedRows() {
+  const rows = [];
+  for (let h = 1; h <= 18; h++) rows.push({ Hole: h, StrokeIndex: '' });
+  return rows;
+}
 
 function renderHoleHandicaps() {
   const body = document.getElementById('holeHcBody');
+  if (!body) return;
   body.innerHTML = '';
-  holeHandicaps.forEach((row, idx) => {
+  for (let h = 1; h <= 18; h++) {
+    const row = holeHandicaps.find((r) => Number(r.Hole) === h) || {};
+    const redRow = holeHandicapsRed.find((r) => Number(r.Hole) === h) || {};
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td class="match-label">Hole ${row.Hole}${row.Hole == 9 || row.Hole == 18 ? ' <span class="hint">(' + (row.Hole == 9 ? 'end of front 9' : 'end of back 9') + ')</span>' : ''}</td>
-      <td><input type="number" min="1" max="18" value="${row.StrokeIndex}" data-idx="${idx}" data-field="StrokeIndex" style="width:100px;"></td>
-      <td><input type="number" min="3" max="6" value="${row.Par || ''}" data-idx="${idx}" data-field="Par" style="width:80px;"></td>
+      <td class="match-label">Hole ${h}${h === 9 || h === 18 ? ' <span class="hint">(' + (h === 9 ? 'end of front 9' : 'end of back 9') + ')</span>' : ''}</td>
+      <td>${row.StrokeIndex || ''}</td>
+      <td>${redRow.StrokeIndex || ''}</td>
+      <td>${row.Par || ''}</td>
     `;
-    tr.querySelectorAll('input').forEach((el) => {
-      el.addEventListener('change', (e) => {
-        holeHandicaps[idx][e.target.dataset.field] = e.target.value;
-      });
-    });
     body.appendChild(tr);
-  });
-}
-
-async function saveHoleHandicaps() {
-  const indices = holeHandicaps.map((r) => String(r.StrokeIndex)).filter((v) => v !== '');
-  const seen = {};
-  let dup = null;
-  indices.forEach((v) => { if (seen[v]) dup = v; seen[v] = true; });
-  if (dup) {
-    showStatus('holeHcStatus', false, `Stroke Index ${dup} is used more than once — each hole needs a unique value 1–18.`);
-    return;
-  }
-  try {
-    const res = await apiPost('saveHoleHandicaps', { holeHandicaps: JSON.stringify(holeHandicaps) });
-    if (res.success) {
-      holeHandicaps = res.data;
-      renderHoleHandicaps();
-      const filled = holeHandicaps.filter((r) => r.StrokeIndex !== '' && r.StrokeIndex != null).length;
-      showStatus('holeHcStatus', true, filled === 18 ? 'Saved — all 18 holes set.' : `Saved (${filled} of 18 holes set so far).`);
-    } else {
-      showStatus('holeHcStatus', false, res.error);
-    }
-  } catch (err) {
-    showStatus('holeHcStatus', false, 'Network error: ' + err.message);
   }
 }
 
@@ -584,14 +593,27 @@ function rosterRowEl(p, idx) {
     </td>
     <td><input type="number" step="0.1" value="${p.HandicapIndex || ''}" data-field="HandicapIndex" data-idx="${idx}"></td>
     <td><input type="text" value="${escapeAttr(p.Tee || '')}" data-field="Tee" data-idx="${idx}"></td>
+    <td class="roster-ch-cell" data-ch-idx="${idx}">${rosterChDisplay(p)}</td>
     <td><button class="link" onclick="removeRosterRow(${idx})">Remove</button></td>
   `;
   tr.querySelectorAll('input, select').forEach((el) => {
     el.addEventListener('change', (e) => {
       roster[idx][e.target.dataset.field] = e.target.value;
+      if (e.target.dataset.field === 'HandicapIndex' || e.target.dataset.field === 'Tee') {
+        const chCell = tr.querySelector(`[data-ch-idx="${idx}"]`);
+        if (chCell) chCell.textContent = rosterChDisplay(roster[idx]);
+      }
     });
   });
   return tr;
+}
+
+// Read-only display for the Roster's Course Handicap column — recomputed
+// live as Handicap Index / Tee are edited, never stored as its own field.
+function rosterChDisplay(p) {
+  if (!p || p.HandicapIndex === '' || p.HandicapIndex === undefined || p.HandicapIndex === null) return '';
+  const ch = courseHandicap(p.HandicapIndex, p.Tee);
+  return ch === '' ? '' : String(ch);
 }
 
 function addRosterRow() {
@@ -648,9 +670,9 @@ function defaultPairingRows(day) {
   const rows = [];
   for (let m = 1; m <= 9; m++) {
     if (day === '2' || day === 2) {
-      rows.push({ MatchNum: m, TeamA_P1: '', TeamA_P2: '', TeamB_P1: '', TeamB_P2: '', Tee: '', PIN: '', MP1_TeamA: '', MP1_TeamB: '', MP2_TeamA: '', MP2_TeamB: '', MPSwapped: false });
+      rows.push({ MatchNum: m, TeamA_P1: '', TeamA_P2: '', TeamB_P1: '', TeamB_P2: '', StartHole: '', PIN: '', MP1_TeamA: '', MP1_TeamB: '', MP2_TeamA: '', MP2_TeamB: '', MPSwapped: false });
     } else {
-      rows.push({ MatchNum: m, TeamA_P1: '', TeamA_P2: '', TeamB_P1: '', TeamB_P2: '', StartHole: '', Tee: '', PIN: '' });
+      rows.push({ MatchNum: m, TeamA_P1: '', TeamA_P2: '', TeamB_P1: '', TeamB_P2: '', StartHole: '', PIN: '' });
     }
   }
   return rows;
@@ -686,11 +708,7 @@ function pairingRowEl(day, row, idx) {
     <td>${playerSelect(row.TeamA_P2, 'A', `${base} data-field="TeamA_P2"`)}</td>
     <td>${playerSelect(row.TeamB_P1, 'B', `${base} data-field="TeamB_P1"`)}</td>
     <td>${playerSelect(row.TeamB_P2, 'B', `${base} data-field="TeamB_P2"`)}</td>
-    ${isDay2
-      ? `<td><input type="text" value="${escapeAttr(row.Tee || '')}" ${base} data-field="Tee" style="width:80px;"></td>`
-      : `<td><input type="number" value="${row.StartHole || ''}" ${base} data-field="StartHole" style="width:70px;"></td>
-         <td><input type="text" value="${escapeAttr(row.Tee || '')}" ${base} data-field="Tee" style="width:80px;"></td>`
-    }
+    <td><input type="text" value="${escapeAttr(row.StartHole || '')}" ${base} data-field="StartHole" placeholder="e.g. 18a" style="width:70px;"></td>
     <td>
       <input type="text" value="${escapeAttr(row.PIN || '')}" ${base} data-field="PIN" maxlength="8" placeholder="open" style="width:70px;">
       <button type="button" class="link" data-genpin-idx="${idx}" style="font-size:0.75rem; padding:0;">generate</button>
@@ -790,7 +808,8 @@ async function savePairings(day) {
 // ====================== PRINT SCORECARDS (Day 2 only) ======================
 // Same strokes-per-hole math as live.html's scoring page, duplicated here
 // since this file doesn't share code with it — every player gets strokes on
-// their own hardest holes based on their full Handicap Index from the Roster.
+// their own hardest holes based on their Course Handicap (see courseHandicap
+// above), not their raw Handicap Index.
 function strokesOnHolePrint(handicapIndex, strokeIndex) {
   const hc = parseFloat(handicapIndex);
   const si = parseInt(strokeIndex, 10);
@@ -799,6 +818,41 @@ function strokesOnHolePrint(handicapIndex, strokeIndex) {
   const base = Math.floor(rounded / 18);
   const extra = (si <= (rounded % 18)) ? 1 : 0;
   return base + extra;
+}
+// A blank row of 18 hole cells (plus OUT/IN/TOT) for writing in "W"/"L"/"T"
+// by hand — used on both days' printed scorecards. Holes outside
+// [activeStart, activeEnd] are shaded (not blank-but-writable) since a W/L/T
+// row that only covers one segment (e.g. Day 2's back-nine Match Play) isn't
+// meaningful for the other segment's holes; TOT is shaded unless the row
+// covers the full round, since a partial-segment tally has no round total.
+function wltCellsHtml(activeStart, activeEnd, startHoleNum) {
+  const fullRange = activeStart === 1 && activeEnd === 18;
+  let cells = '';
+  for (let h = 1; h <= 18; h++) {
+    const segClass = h === 10 ? 'seg' : '';
+    const isActive = h >= activeStart && h <= activeEnd;
+    const startClass = (isActive && h === startHoleNum) ? ' sc-start-hole' : '';
+    cells += `<td class="${segClass}${startClass}${isActive ? '' : ' sc-na'}"></td>`;
+    if (h === 9) cells += `<td class="sc-sum${isActive ? '' : ' sc-na'}"></td>`;
+    if (h === 18) cells += `<td class="sc-sum${isActive ? '' : ' sc-na'}"></td><td class="sc-sum${fullRange ? '' : ' sc-na'}"></td>`;
+  }
+  return cells;
+}
+// A row above the hole-number header labeling each 9 by its format (e.g.
+// "Front 9: Captain's Choice" / "Back 9: Modified Alternate Shot"). Column
+// counts match holeHeaderCells: holes 1-9 + OUT = 10 columns, holes 10-18 +
+// IN + TOT = 11 columns, plus the leading name column.
+function segmentHeaderRowHtml(frontLabel, backLabel) {
+  return `<tr class="sc-segrow"><th class="sc-name"></th><th colspan="10">${escapeHtml(frontLabel)}</th><th colspan="11">${escapeHtml(backLabel)}</th></tr>`;
+}
+// Pulls the leading hole number out of a Start Hole value like "18a" or "18b"
+// (or a plain "5") so that hole's header box can be highlighted — returns
+// null for blank/unrecognized values, which just means no highlight.
+function startHoleNumberOf(startHole) {
+  const m = String(startHole || '').match(/^\s*(\d{1,2})/);
+  if (!m) return null;
+  const n = parseInt(m[1], 10);
+  return (n >= 1 && n <= 18) ? n : null;
 }
 function hasPlayers(row) {
   return !!(row.TeamA_P1 || row.TeamA_P2 || row.TeamB_P1 || row.TeamB_P2);
@@ -831,6 +885,7 @@ const PRINT_CSS = `
   .sc-title { font-size: 1.3rem; font-weight: 700; }
   .sc-sub { font-size: 0.95rem; color: #444; margin-top: 2px; }
   .sc-teams { font-size: 1rem; font-weight: 600; margin-top: 4px; }
+  .sc-pin-badge { display: inline-block; margin-top: 6px; padding: 4px 10px; border: 1.5px solid #333; border-radius: 6px; font-size: 0.85rem; font-weight: 600; background: #fafafa; }
   table.sc-table { border-collapse: collapse; width: 100%; margin-top: 12px; font-size: 0.8rem; }
   table.sc-table th, table.sc-table td { border: 1px solid #999; padding: 5px 2px; text-align: center; min-width: 22px; }
   table.sc-table th.sc-name, table.sc-table td.sc-name { text-align: left; padding: 5px 8px; white-space: nowrap; font-weight: 600; min-width: 130px; }
@@ -838,6 +893,11 @@ const PRINT_CSS = `
   td.sc-sum, th.sc-sum { background: #fafafa; }
   .sc-dots { color: #b3261e; font-weight: 700; letter-spacing: 1px; }
   .sc-tee { font-weight: 400; color: #666; font-size: 0.85em; }
+  tr.sc-wlt td { border-top: none; }
+  tr.sc-wlt td.sc-name { font-style: italic; color: #666; font-weight: 400; font-size: 0.85em; padding-top: 1px; padding-bottom: 6px; }
+  .sc-na { background: #ececec; }
+  .sc-start-hole { background: #fff176; }
+  tr.sc-segrow th { background: #e4e4e4; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.02em; text-align: center; }
   .seg { border-left: 2px solid #333; }
   .sc-note { font-size: 0.78rem; color: #555; margin-top: 10px; }
   .sc-sample-badge { display: inline-block; background: #fff3cd; color: #7a5b00; border: 1px solid #e6c866; border-radius: 4px; padding: 3px 10px; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.03em; margin-bottom: 8px; }
@@ -850,55 +910,96 @@ function scorecardCardHtml(row, rosterList, isSample) {
   rosterList = rosterList || roster;
   const names = { A: settings.TeamAName || 'Team A', B: settings.TeamBName || 'Team B' };
   const hasPar = holeHandicaps.some((h) => h.Par !== '' && h.Par != null);
-  let holeHeaderCells = '';
-  let parCells = '';
-  let hcpCells = '';
-  for (let h = 1; h <= 18; h++) {
-    const hh = holeHandicaps.find((r) => Number(r.Hole) === h) || {};
-    const segClass = h === 10 ? 'seg' : '';
-    holeHeaderCells += `<th class="${segClass}">${h}</th>`;
-    parCells += `<td class="${segClass}">${hh.Par || ''}</td>`;
-    hcpCells += `<td class="${segClass}">${hh.StrokeIndex || ''}</td>`;
-    if (h === 9) { holeHeaderCells += '<th class="sc-sum">OUT</th>'; parCells += '<td class="sc-sum"></td>'; hcpCells += '<td class="sc-sum"></td>'; }
-    if (h === 18) { holeHeaderCells += '<th class="sc-sum">IN</th><th class="sc-sum">TOT</th>'; parCells += '<td class="sc-sum"></td><td class="sc-sum"></td>'; hcpCells += '<td class="sc-sum"></td><td class="sc-sum"></td>'; }
-  }
   const players = [
     ['TeamA_P1', row.TeamA_P1], ['TeamA_P2', row.TeamA_P2],
     ['TeamB_P1', row.TeamB_P1], ['TeamB_P2', row.TeamB_P2],
   ];
-  const playerRows = players.map(([, name]) => {
+  // Red tees use a different Stroke Index than everyone else — if anyone in
+  // this match is on Red, show a second legend row so the numbers on the
+  // sheet always match what each player's own row is actually using.
+  const anyRed = players.some(([, name]) => {
     const p = rosterList.find((r) => r.Name === name);
-    const hc = p ? p.HandicapIndex : '';
+    return p && (p.Tee || '').trim().toLowerCase() === 'red';
+  });
+  const startHoleNum = startHoleNumberOf(row.StartHole);
+  let holeHeaderCells = '';
+  let parCells = '';
+  let hcpCells = '';
+  let hcpRedCells = '';
+  for (let h = 1; h <= 18; h++) {
+    const hh = holeHandicaps.find((r) => Number(r.Hole) === h) || {};
+    const hhRed = holeHandicapsRed.find((r) => Number(r.Hole) === h) || {};
+    const segClass = h === 10 ? 'seg' : '';
+    const startClass = h === startHoleNum ? ' sc-start-hole' : '';
+    holeHeaderCells += `<th class="${segClass}${startClass}">${h}</th>`;
+    parCells += `<td class="${segClass}${startClass}">${hh.Par || ''}</td>`;
+    hcpCells += `<td class="${segClass}${startClass}">${hh.StrokeIndex || ''}</td>`;
+    hcpRedCells += `<td class="${segClass}${startClass}">${hhRed.StrokeIndex || ''}</td>`;
+    if (h === 9) { holeHeaderCells += '<th class="sc-sum">OUT</th>'; parCells += '<td class="sc-sum"></td>'; hcpCells += '<td class="sc-sum"></td>'; hcpRedCells += '<td class="sc-sum"></td>'; }
+    if (h === 18) { holeHeaderCells += '<th class="sc-sum">IN</th><th class="sc-sum">TOT</th>'; parCells += '<td class="sc-sum"></td><td class="sc-sum"></td>'; hcpCells += '<td class="sc-sum"></td><td class="sc-sum"></td>'; hcpRedCells += '<td class="sc-sum"></td><td class="sc-sum"></td>'; }
+  }
+  const playerRowHtml = (name) => {
+    const p = rosterList.find((r) => r.Name === name);
+    const hc = p ? courseHandicap(p.HandicapIndex, p.Tee) : '';
     const tee = p ? p.Tee : '';
     let cells = '';
+    let strokesTotal = 0;
     for (let h = 1; h <= 18; h++) {
-      const hh = holeHandicaps.find((r) => Number(r.Hole) === h) || {};
-      const strokes = name ? strokesOnHolePrint(hc, hh.StrokeIndex) : 0;
+      const si = strokeIndexForTee(tee, h);
+      const strokes = name ? strokesOnHolePrint(hc, si) : 0;
+      strokesTotal += strokes;
       const dots = strokes > 0 ? `<span class="sc-dots">${'&bull;'.repeat(strokes)}</span>` : '';
       const segClass = h === 10 ? 'seg' : '';
-      cells += `<td class="${segClass}">${dots}</td>`;
+      const startClass = h === startHoleNum ? ' sc-start-hole' : '';
+      cells += `<td class="${segClass}${startClass}">${dots}</td>`;
       if (h === 9) cells += '<td class="sc-sum"></td>';
       if (h === 18) cells += '<td class="sc-sum"></td><td class="sc-sum"></td>';
     }
-    const teeHtml = tee ? ` <span class="sc-tee">(${escapeHtml(tee)})</span>` : '';
+    // Course handicap (total strokes across all 18) shown right next to the
+    // tee, so it's easy to sanity-check against what's in the Roster instead
+    // of having to count dots by hand.
+    const strokesLabel = strokesTotal > 0 ? `${strokesTotal} stroke${strokesTotal === 1 ? '' : 's'}` : '';
+    const parenBits = [tee, strokesLabel].filter(Boolean).join(', ');
+    const teeHtml = parenBits ? ` <span class="sc-tee">(${escapeHtml(parenBits)})</span>` : '';
     return `<tr><td class="sc-name">${escapeHtml(name || '(unassigned)')}${teeHtml}</td>${cells}</tr>`;
-  }).join('');
+  };
+
+  // Each team's block is its own two player rows followed by its own three
+  // W/L/T rows (Best Ball, then one Match Play row per player) — Best Ball
+  // is 2v2 so both of a team's players share that row; each Match Play row
+  // is that specific player's own 1-on-1 (back 9 only — see wltCellsHtml).
+  const teamBlockHtml = (teamName, p1, p2) => {
+    const wltRows = [
+      [`${escapeHtml(teamName)} - Best Ball`, wltCellsHtml(1, 9, startHoleNum)],
+      [`${escapeHtml(teamName)} - Match Play - ${escapeHtml(lastName(p1))}`, wltCellsHtml(10, 18, startHoleNum)],
+      [`${escapeHtml(teamName)} - Match Play - ${escapeHtml(lastName(p2))}`, wltCellsHtml(10, 18, startHoleNum)],
+    ].map(([label, cells]) => `<tr class="sc-wlt"><td class="sc-name">W/L/T &mdash; ${label}</td>${cells}</tr>`).join('');
+    return `${playerRowHtml(p1)}${playerRowHtml(p2)}${wltRows}`;
+  };
+  const spacerRowHtml = '<tr class="sc-spacer"><td colspan="22" style="border:none; padding:6px 0;"></td></tr>';
 
   return `
     <div class="scorecard">
       ${isSample ? '<div class="sc-sample-badge">SAMPLE — for layout preview only, not a real match</div>' : ''}
       <div class="sc-title">${escapeHtml(settings.TournamentName || 'Heritage Legends Tournament')}</div>
-      <div class="sc-sub">Day 2 &mdash; ${escapeHtml(formatDateNice(settings.Day2Date))} &nbsp;&middot;&nbsp; Match ${row.MatchNum} &nbsp;&middot;&nbsp; Tee: ${escapeHtml(row.Tee || 'TBD')}</div>
+      <div class="sc-sub">Day 2 &mdash; ${escapeHtml(formatDateNice(settings.Day2Date))} &nbsp;&middot;&nbsp; Match ${row.MatchNum} &nbsp;&middot;&nbsp; Start Hole: ${escapeHtml(row.StartHole || 'TBD')}</div>
       <div class="sc-teams">${escapeHtml(names.A)} vs ${escapeHtml(names.B)}</div>
+      ${row.PIN ? `<div class="sc-pin-badge">Scorekeeper PIN (backup): <strong>${escapeHtml(row.PIN)}</strong></div>` : ''}
       <table class="sc-table">
-        <thead><tr><th class="sc-name">Player</th>${holeHeaderCells}</tr></thead>
+        <thead>
+          ${segmentHeaderRowHtml("Front 9: Best Ball", "Back 9: Individual Match Play")}
+          <tr><th class="sc-name">Player</th>${holeHeaderCells}</tr>
+        </thead>
         <tbody>
           ${hasPar ? `<tr class="sc-meta"><td class="sc-name">Par</td>${parCells}</tr>` : ''}
           <tr class="sc-meta"><td class="sc-name">Hcp</td>${hcpCells}</tr>
-          ${playerRows}
+          ${anyRed ? `<tr class="sc-meta"><td class="sc-name">Hcp (Red)</td>${hcpRedCells}</tr>` : ''}
+          ${teamBlockHtml(names.A, row.TeamA_P1, row.TeamA_P2)}
+          ${spacerRowHtml}
+          ${teamBlockHtml(names.B, row.TeamB_P1, row.TeamB_P2)}
         </tbody>
       </table>
-      <p class="sc-note">&bull; marks a hole where that player gets a handicap stroke (&bull;&bull; = two strokes) &mdash; write the gross score in the box, circle it when a stroke applies, for net.</p>
+      <p class="sc-note">&bull; marks a hole where that player gets a handicap stroke (&bull;&bull; = two strokes) &mdash; write the gross score in the box, circle it when a stroke applies, for net. Each player's dots already use their own tee's Stroke Index${anyRed ? ' (Red players use the "Hcp (Red)" row above, everyone else uses "Hcp")' : ''}. The italic "W/L/T" rows under each team are optional, for writing in who won each hole by hand &mdash; Best Ball only covers the front 9, each Match Play row only the back 9 (shaded cells don't apply to that row).</p>
     </div>
   `;
 }
@@ -907,17 +1008,22 @@ function scorecardCardHtml(row, rosterList, isSample) {
 // both one combined score per team per hole, not per player — so this is one
 // row per team instead of four, and no Hcp row/stroke dots (Day 1 doesn't use
 // handicaps at all). Still shows Par (if entered) and each team's two player
-// names for reference.
-function scorecardCardHtmlDay1(row, isSample) {
+// names — with each player's own Roster tee alongside their name, since two
+// teammates can play from different tees even on Day 1 (it just doesn't
+// affect their combined score the way it would on Day 2).
+function scorecardCardHtmlDay1(row, rosterList, isSample) {
+  rosterList = rosterList || roster;
   const names = { A: settings.TeamAName || 'Team A', B: settings.TeamBName || 'Team B' };
   const hasPar = holeHandicaps.some((h) => h.Par !== '' && h.Par != null);
+  const startHoleNum = startHoleNumberOf(row.StartHole);
   let holeHeaderCells = '';
   let parCells = '';
   for (let h = 1; h <= 18; h++) {
     const hh = holeHandicaps.find((r) => Number(r.Hole) === h) || {};
     const segClass = h === 10 ? 'seg' : '';
-    holeHeaderCells += `<th class="${segClass}">${h}</th>`;
-    parCells += `<td class="${segClass}">${hh.Par || ''}</td>`;
+    const startClass = h === startHoleNum ? ' sc-start-hole' : '';
+    holeHeaderCells += `<th class="${segClass}${startClass}">${h}</th>`;
+    parCells += `<td class="${segClass}${startClass}">${hh.Par || ''}</td>`;
     if (h === 9) { holeHeaderCells += '<th class="sc-sum">OUT</th>'; parCells += '<td class="sc-sum"></td>'; }
     if (h === 18) { holeHeaderCells += '<th class="sc-sum">IN</th><th class="sc-sum">TOT</th>'; parCells += '<td class="sc-sum"></td><td class="sc-sum"></td>'; }
   }
@@ -928,28 +1034,40 @@ function scorecardCardHtmlDay1(row, isSample) {
     let cells = '';
     for (let h = 1; h <= 18; h++) {
       const segClass = h === 10 ? 'seg' : '';
-      cells += `<td class="${segClass}"></td>`;
+      const startClass = h === startHoleNum ? ' sc-start-hole' : '';
+      cells += `<td class="${segClass}${startClass}"></td>`;
       if (h === 9) cells += '<td class="sc-sum"></td>';
       if (h === 18) cells += '<td class="sc-sum"></td><td class="sc-sum"></td>';
     }
-    const playersHtml = (p1 || p2) ? ` <span class="sc-tee">(${escapeHtml(p1 || '?')} / ${escapeHtml(p2 || '?')})</span>` : '';
-    return `<tr><td class="sc-name">${escapeHtml(teamName)}${playersHtml}</td>${cells}</tr>`;
-  }).join('');
+    const nameWithTee = (name) => {
+      if (!name) return '?';
+      const p = rosterList.find((r) => r.Name === name);
+      return p && p.Tee ? `${escapeHtml(name)} (${escapeHtml(p.Tee)})` : escapeHtml(name);
+    };
+    const playersHtml = (p1 || p2) ? ` <span class="sc-tee">(${nameWithTee(p1)} / ${nameWithTee(p2)})</span>` : '';
+    const wltCells = wltCellsHtml(1, 18, startHoleNum);
+    return `<tr><td class="sc-name">${escapeHtml(teamName)}${playersHtml}</td>${cells}</tr>
+      <tr class="sc-wlt"><td class="sc-name">W / L / T</td>${wltCells}</tr>`;
+  }).join('<tr class="sc-spacer"><td colspan="22" style="border:none; padding:6px 0;"></td></tr>');
 
   return `
     <div class="scorecard">
       ${isSample ? '<div class="sc-sample-badge">SAMPLE — for layout preview only, not a real match</div>' : ''}
       <div class="sc-title">${escapeHtml(settings.TournamentName || 'Heritage Legends Tournament')}</div>
-      <div class="sc-sub">Day 1 &mdash; ${escapeHtml(formatDateNice(settings.Day1Date))} &nbsp;&middot;&nbsp; Match ${row.MatchNum} &nbsp;&middot;&nbsp; Start Hole: ${escapeHtml(row.StartHole || 'TBD')} &nbsp;&middot;&nbsp; Tee: ${escapeHtml(row.Tee || 'TBD')}</div>
+      <div class="sc-sub">Day 1 &mdash; ${escapeHtml(formatDateNice(settings.Day1Date))} &nbsp;&middot;&nbsp; Match ${row.MatchNum} &nbsp;&middot;&nbsp; Start Hole: ${escapeHtml(row.StartHole || 'TBD')}</div>
       <div class="sc-teams">${escapeHtml(names.A)} vs ${escapeHtml(names.B)}</div>
+      ${row.PIN ? `<div class="sc-pin-badge">Scorekeeper PIN (backup): <strong>${escapeHtml(row.PIN)}</strong></div>` : ''}
       <table class="sc-table">
-        <thead><tr><th class="sc-name">Team</th>${holeHeaderCells}</tr></thead>
+        <thead>
+          ${segmentHeaderRowHtml("Front 9: Captain's Choice", "Back 9: Modified Alternate Shot")}
+          <tr><th class="sc-name">Team</th>${holeHeaderCells}</tr>
+        </thead>
         <tbody>
           ${hasPar ? `<tr class="sc-meta"><td class="sc-name">Par</td>${parCells}</tr>` : ''}
           ${teamRows}
         </tbody>
       </table>
-      <p class="sc-note">Front 9: Captain's Choice. Back 9: Modified Alternate Shot. One combined score per team per hole &mdash; no handicap strokes apply on Day 1.</p>
+      <p class="sc-note">Front 9: Captain's Choice. Back 9: Modified Alternate Shot. One combined score per team per hole &mdash; no handicap strokes apply on Day 1. The italic "W / L / T" row under each team is optional, for writing in who won each hole by hand.</p>
     </div>
   `;
 }
@@ -957,26 +1075,32 @@ function scorecardCardHtmlDay1(row, isSample) {
 // Shows one made-up match so you can check the layout before real pairings
 // exist yet for the selected day — Day 2 uses whatever's actually in the
 // Hole Handicaps table (real Stroke Index/Par if you've entered them, blank
-// otherwise), but the players, their handicaps, and the tee are fictional.
+// otherwise), but the players and their handicaps are fictional.
 function printSampleScorecard() {
   const day = document.getElementById('printDaySelect').value;
   let cardHtml;
   if (day === '1') {
-    const sampleRow = {
-      MatchNum: '1', TeamA_P1: 'Sample Player A1', TeamA_P2: 'Sample Player A2',
-      TeamB_P1: 'Sample Player B1', TeamB_P2: 'Sample Player B2', StartHole: '1', Tee: 'White',
-    };
-    cardHtml = scorecardCardHtmlDay1(sampleRow, true);
-  } else {
-    const sampleRoster = [
-      { Name: 'Sample Player A1', HandicapIndex: 8, Tee: 'White' },
-      { Name: 'Sample Player A2', HandicapIndex: 14, Tee: 'White' },
-      { Name: 'Sample Player B1', HandicapIndex: 5, Tee: 'Blue' },
-      { Name: 'Sample Player B2', HandicapIndex: 20, Tee: 'White' },
+    const sampleRosterDay1 = [
+      { Name: 'Sample Player A1', Tee: 'Gold' },
+      { Name: 'Sample Player A2', Tee: 'Red' },
+      { Name: 'Sample Player B1', Tee: 'Gold' },
+      { Name: 'Sample Player B2', Tee: 'Gold' },
     ];
     const sampleRow = {
       MatchNum: '1', TeamA_P1: 'Sample Player A1', TeamA_P2: 'Sample Player A2',
-      TeamB_P1: 'Sample Player B1', TeamB_P2: 'Sample Player B2', Tee: 'White / Blue',
+      TeamB_P1: 'Sample Player B1', TeamB_P2: 'Sample Player B2', StartHole: '1',
+    };
+    cardHtml = scorecardCardHtmlDay1(sampleRow, sampleRosterDay1, true);
+  } else {
+    const sampleRoster = [
+      { Name: 'Sample Player A1', HandicapIndex: 8, Tee: 'Gold' },
+      { Name: 'Sample Player A2', HandicapIndex: 14, Tee: 'Red' },
+      { Name: 'Sample Player B1', HandicapIndex: 5, Tee: 'Gold' },
+      { Name: 'Sample Player B2', HandicapIndex: 20, Tee: 'Red' },
+    ];
+    const sampleRow = {
+      MatchNum: '1', TeamA_P1: 'Sample Player A1', TeamA_P2: 'Sample Player A2',
+      TeamB_P1: 'Sample Player B1', TeamB_P2: 'Sample Player B2', StartHole: '18b',
     };
     cardHtml = scorecardCardHtml(sampleRow, sampleRoster, true);
   }
@@ -996,17 +1120,49 @@ function openScorecardWindow(cardsHtml) {
   return win;
 }
 
-function printScorecards() {
+// Every match that will actually be printed should have a Scorekeeper PIN on
+// it, so a team without a phone-signal on the course can still call it in to
+// unlock scoring — this backfills any missing PINs on just the matches being
+// printed and saves them to the sheet before the print window opens, so the
+// admin never has to remember a separate "generate PINs" step first.
+async function ensurePinsForPrint(day, rows) {
+  const missing = rows.filter((r) => !r.PIN);
+  if (!missing.length) return { ok: true, generated: 0 };
+  missing.forEach((r) => { r.PIN = randomPin4(); });
+  try {
+    const res = await apiPost('savePairings', { day, pairings: JSON.stringify(pairings[day]) });
+    if (res.success) {
+      pairings[day] = res.data;
+      renderPairings(day);
+      return { ok: true, generated: missing.length };
+    }
+    return { ok: false, error: res.error };
+  } catch (err) {
+    return { ok: false, error: 'Network error: ' + err.message };
+  }
+}
+
+async function printScorecards() {
   const day = document.getElementById('printDaySelect').value;
   const sel = document.getElementById('printMatchSelect').value;
   if (!sel) { showStatus('printStatus', false, `No Day ${day} matches set up yet.`); return; }
   const all = (pairings[day] || []).filter(hasPlayers);
-  const rows = sel === 'all' ? all : all.filter((r) => String(r.MatchNum) === sel);
+  let rows = sel === 'all' ? all : all.filter((r) => String(r.MatchNum) === sel);
   if (!rows.length) { showStatus('printStatus', false, `No matches to print — set up Day ${day} pairings first.`); return; }
+  let generatedCount = 0;
+  if (rows.some((r) => !r.PIN)) {
+    const pinResult = await ensurePinsForPrint(day, rows);
+    if (!pinResult.ok) { showStatus('printStatus', false, `Couldn't auto-generate PINs: ${pinResult.error}`); return; }
+    generatedCount = pinResult.generated;
+    // rows now point at the pre-save objects; re-select the fresh saved rows so the printed PINs match what's stored
+    const allFresh = (pairings[day] || []).filter(hasPlayers);
+    rows = sel === 'all' ? allFresh : allFresh.filter((r) => String(r.MatchNum) === sel);
+  }
   const renderer = day === '1' ? (r) => scorecardCardHtmlDay1(r) : (r) => scorecardCardHtml(r);
   const cardsHtml = rows.map(renderer).join('');
   if (!openScorecardWindow(cardsHtml)) return;
-  showStatus('printStatus', true, `Opened ${rows.length} scorecard${rows.length > 1 ? 's' : ''} in a new tab.`);
+  const pinNote = generatedCount ? ` (generated and saved ${generatedCount} new PIN${generatedCount > 1 ? 's' : ''})` : '';
+  showStatus('printStatus', true, `Opened ${rows.length} scorecard${rows.length > 1 ? 's' : ''} in a new tab${pinNote}.`);
 }
 
 // ====================== UTIL ======================
@@ -1014,6 +1170,13 @@ function escapeHtml(str) {
   return String(str).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 }
 function escapeAttr(str) { return escapeHtml(str); }
+// Roster names are stored "Last, First" — the printed scorecard's per-player
+// W/L/T row labels show just the last name to keep them short.
+function lastName(name) {
+  if (!name) return '?';
+  const idx = name.indexOf(',');
+  return idx === -1 ? name : name.slice(0, idx).trim();
+}
 </script>
 </body>
 </html>
