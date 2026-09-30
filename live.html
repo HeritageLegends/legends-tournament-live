@@ -339,7 +339,7 @@ const EMBEDDED_SNAPSHOT = {
     "TeamBName": "Birdie Boys",
     "TeamBCaptain": "Winston Shade",
     "AdminPIN": 1980,
-    "Day1Locked": false,
+    "Day1Locked": "TRUE",
     "Day2Locked": false,
     "SuspendScorePins": "FALSE",
     "TeamAColor": "#add8e6",
@@ -638,20 +638,20 @@ const EMBEDDED_SNAPSHOT = {
     {
       "PlayerID": 33,
       "Name": "Moreland, Greg",
-      "Team": "NOT_PLAYING",
-      "HandicapIndex": "",
-      "Tee": "",
+      "Team": "B",
+      "HandicapIndex": "13.1",
+      "Tee": "Gold",
       "Active": "true",
-      "Scorekeeper": ""
+      "Scorekeeper": "true"
     },
     {
       "PlayerID": 34,
       "Name": "Nelson, Ellis",
-      "Team": "B",
+      "Team": "NOT_PLAYING",
       "HandicapIndex": 15.9,
       "Tee": "Gold",
       "Active": "true",
-      "Scorekeeper": "true"
+      "Scorekeeper": ""
     },
     {
       "PlayerID": 35,
@@ -1097,7 +1097,7 @@ const EMBEDDED_SNAPSHOT = {
     },
     {
       "MatchNum": 6,
-      "TeamA_P1": "Gurganus, Tom",
+      "TeamA_P1": "Gurganus, Tommy",
       "TeamA_P2": "Swinson, Stan",
       "TeamB_P1": "Rogers, Henry",
       "TeamB_P2": "Roane, Michael",
@@ -1123,7 +1123,7 @@ const EMBEDDED_SNAPSHOT = {
       "MatchNum": 9,
       "TeamA_P1": "Alston, Rufus",
       "TeamA_P2": "Hood, Chuck",
-      "TeamB_P1": "Nelson, Ellis",
+      "TeamB_P1": "Moreland, Greg",
       "TeamB_P2": "Woodard, Jim",
       "StartHole": "18"
     }
@@ -1222,11 +1222,11 @@ const EMBEDDED_SNAPSHOT = {
     },
     {
       "MatchNum": 8,
-      "TeamA_P1": "Gurganus, Tom",
+      "TeamA_P1": "Gurganus, Tommy",
       "TeamA_P2": "McEver, John",
       "TeamB_P1": "Eiloo, Gary",
       "TeamB_P2": "Woodard, Jim",
-      "MP1_TeamA": "Gurganus, Tom",
+      "MP1_TeamA": "Gurganus, Tommy",
       "MP1_TeamB": "Eiloo, Gary",
       "MP2_TeamA": "McEver, John",
       "MP2_TeamB": "Woodard, Jim",
@@ -1237,10 +1237,10 @@ const EMBEDDED_SNAPSHOT = {
       "MatchNum": 9,
       "TeamA_P1": "Swinson, Stan",
       "TeamA_P2": "Buchanan, Buck",
-      "TeamB_P1": "Nelson, Ellis",
+      "TeamB_P1": "Moreland, Greg",
       "TeamB_P2": "Davis, Larry",
       "MP1_TeamA": "Swinson, Stan",
-      "MP1_TeamB": "Nelson, Ellis",
+      "MP1_TeamB": "Moreland, Greg",
       "MP2_TeamA": "Buchanan, Buck",
       "MP2_TeamB": "Davis, Larry",
       "MPSwapped": "",
@@ -1250,39 +1250,39 @@ const EMBEDDED_SNAPSHOT = {
   "matchPins": [
     {
       "MatchNum": 1,
-      "PIN": "1111"
+      "PIN": "1000"
     },
     {
       "MatchNum": 2,
-      "PIN": "2222"
+      "PIN": "2000"
     },
     {
       "MatchNum": 3,
-      "PIN": "3333"
+      "PIN": "3000"
     },
     {
       "MatchNum": 4,
-      "PIN": "4444"
+      "PIN": "4000"
     },
     {
       "MatchNum": 5,
-      "PIN": "5555"
+      "PIN": "5000"
     },
     {
       "MatchNum": 6,
-      "PIN": "6666"
+      "PIN": "6000"
     },
     {
       "MatchNum": 7,
-      "PIN": "7777"
+      "PIN": "7000"
     },
     {
       "MatchNum": 8,
-      "PIN": "8888"
+      "PIN": "8000"
     },
     {
       "MatchNum": 9,
-      "PIN": "9999"
+      "PIN": "9000"
     }
   ]
 };
@@ -1291,7 +1291,7 @@ const EMBEDDED_SNAPSHOT = {
 //   index.html and live.html =====
 // Bumped by hand every time this file changes — see the matching constant in
 // index.html and Code.gs.
-const LIVE_VERSION = '2026-09-28b';
+const LIVE_VERSION = '2026-09-30';
 document.getElementById('envBadge').innerHTML = `${ENV.toUpperCase()}<div style="font-size:11px; opacity:0.75;" id="liveVersionBadge">Page: ${LIVE_VERSION} • Backend: …</div>`;
 async function loadVersionBadge() {
   const el = document.getElementById('liveVersionBadge');
