@@ -1951,7 +1951,7 @@ function renderScoringUI(day, matchNum) {
     document.getElementById('scStatusLines').innerHTML = '';
     document.getElementById('scGridWrap').innerHTML = `
       <div class="card" style="margin:0; background:#fdecea; border-color:var(--error);">
-        <p class="hint" style="margin-top:0; color:var(--error); font-weight:600;">Day ${escapeHtml(day)} results are locked by the admin — scores can no longer be changed. Check the Scoreboard tab for final results.</p>
+        <p class="hint" style="margin-top:0; color:var(--error); font-weight:600;">Day ${escapeHtml(day)} results are locked by the admin — scores can no longer be changed. Check the Scoreboard tab for final results.${day === '1' ? ' To enter Day 2 results, click on the dropdown window above and select "Day 2."' : ''}</p>
       </div>
     `;
     return;
